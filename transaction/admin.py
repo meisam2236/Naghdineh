@@ -3,11 +3,11 @@ from .models import *
 
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ['user', 'avatar', 'stock']
-    search_fields = ['title', 'content', 'category']
-
+    search_fields = ['user']
+    
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ['title', 'price', 'date_time', 'category', 'wallet_name']
-    search_fields = ['title', 'category', 'wallet_name']
+    list_display = ['title', 'price', 'date_time', 'category', 'wallet', 'user', 'type']
+    search_fields = ['user']
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['title']
