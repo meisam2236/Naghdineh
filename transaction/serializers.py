@@ -1,9 +1,17 @@
 from rest_framework import serializers
 import datetime
 
-from rest_framework.views import set_rollback
+class CreateUserSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+    email = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+    password = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+    avatar = serializers.FileField(allow_null=True, allow_empty_file=True)
 
-class AddTransactionSerializer(serializers.Serializer):
+class LoginUserSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+    password = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+
+class CreateTransactionSerializer(serializers.Serializer):
     title = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
     price = serializers.IntegerField(default=0)
     date_time = serializers.DateTimeField(default=datetime.datetime.now)
