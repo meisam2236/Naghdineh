@@ -17,5 +17,29 @@ class CreateTransactionSerializer(serializers.Serializer):
     date_time = serializers.DateTimeField(default=datetime.datetime.now)
     category = serializers.IntegerField(required=True, allow_null=False)
     wallet = serializers.IntegerField(required=True, allow_null=False)
-    user = serializers.IntegerField(required=True, allow_null=False)
     type = serializers.CharField(required=True, max_length=1, allow_null=False, allow_blank=False)
+
+class UpdateTransactionSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=True, allow_null=False)
+    title = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+    price = serializers.IntegerField(default=0)
+    date_time = serializers.DateTimeField(default=datetime.datetime.now)
+    category = serializers.IntegerField(required=True, allow_null=False)
+    wallet = serializers.IntegerField(required=True, allow_null=False)
+    type = serializers.CharField(required=True, max_length=1, allow_null=False, allow_blank=False)
+
+class CreateCategorySerializer(serializers.Serializer):
+    title = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+
+class UpdateCategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=True, allow_null=False)
+    title = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+
+class CreateWalletSerializer(serializers.Serializer):
+    title = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+    stock = serializers.IntegerField(default=0)
+
+class UpdateWalletSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=True, allow_null=False)
+    title = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+    stock = serializers.IntegerField(default=0)
