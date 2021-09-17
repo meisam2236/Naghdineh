@@ -3,6 +3,9 @@ from django.urls import path
 
 urlpatterns = [
     path('api/create-user', views.CreateUserAPIView.as_view(), name='create_user_api'),
+    path('api/read-user', views.ReadUserAPIView.as_view(), name='read_user_api'),
+    path('api/update-password-user', views.UpdatePasswordUserAPIView.as_view(), name='update_password_user_api'),
+    path('api/update-avatar-user', views.UpdateAvatarUserAPIView.as_view(), name='update_avatar_user_api'),
     path('api/delete-user', views.DeleteUserAPIView.as_view(), name='delete_user_api'),
     path('api/login-user', views.LoginUserAPIView.as_view(), name='login_user_api'),
     path('api/logout-user', views.LogoutUserAPIView.as_view(), name='logout_user_api'),

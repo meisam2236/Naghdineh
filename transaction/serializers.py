@@ -7,6 +7,21 @@ class CreateUserSerializer(serializers.Serializer):
     password = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
     avatar = serializers.FileField(allow_null=True, allow_empty_file=True)
 
+class ReadUserSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+    email = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+    avatar = serializers.FileField(allow_null=True, allow_empty_file=True)
+
+class UpdatePasswordUserSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+    new_password = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+
+class UpdateAvatarUserSerializer(serializers.Serializer):
+    avatar = serializers.FileField(allow_null=True, allow_empty_file=True)
+
+class DeleteUserSerializer(serializers.Serializer):
+    password = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
+
 class LoginUserSerializer(serializers.Serializer):
     username = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)
     password = serializers.CharField(required=True, max_length=128, allow_null=False, allow_blank=False)

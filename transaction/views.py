@@ -7,9 +7,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
-
-import transaction
+from django.contrib.auth import authenticate
 
 def stock_update(user):
     wallets = Wallet.objects.filter(user__exact=user)
@@ -43,10 +41,62 @@ class CreateUserAPIView(APIView):
             return Response({'status': 'Internal Server Error!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ReadUserAPIView(APIView):
-    pass
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        try:
+            user_id = request.GET['id']
+            user = User.objects.get(id=user_id)
+            custom_user = CustomUser.objects.get(user=user)
+            serializedData = serializers.ReadUserSerializer(custom_user, many=True)
+            data = serializedData.data
+            return Response({'data': data}, status=status.HTTP_200_OK)
+        except:
+            return Response({'status': 'Internal Server Error!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class UpdateUserAPIView(APIView):
-    pass 
+class UpdatePasswordUserAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        try:
+            token = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
+            username = Token.objects.get(key=token).user.username
+            serializedData = serializers.CreateUserSerializer(data=request.data)
+            if serializedData.is_valid():
+                old_password = serializedData.data.get('old_password')
+                new_password = serializedData.data.get('new_password')
+            else:
+                return Response({'status':'Bad Request!'}, status=status.HTTP_400_BAD_REQUEST)
+            user = authenticate(username=username, password=old_password)
+            if user is not None:
+                user.set_password(new_password)
+                user.save()
+                return Response({'status': 'OK!'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'status':'User not found!'}, status=status.status_404_NOT_FOUND)
+        except:
+            return Response({'status': 'Internal Server Error!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
+
+class UpdateAvatarUserAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        try:
+            token = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
+            user = Token.objects.get(key=token).user
+            custom_user = CustomUser.objects.get(user=user)
+            serializedData = serializers.UpdateAvatarUserSerializer(data=request.data)
+            if serializedData.is_valid():
+                if serializedData.data.get('avatar'):
+                    avatar = request.FILES['avatar']
+                else:
+                    return Response({'status':'No File Provided!'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'status':'Bad Request!'}, status=status.HTTP_400_BAD_REQUEST)
+            custom_user.update(avatar=avatar)
+            return Response({'status': 'OK!'}, status=status.HTTP_200_OK)
+        except:
+            return Response({'status': 'Internal Server Error!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
 
 class DeleteUserAPIView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -54,10 +104,19 @@ class DeleteUserAPIView(APIView):
     def get(self, request):
         try:
             token = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
-            user = Token.objects.get(key=token).user
-            Token.objects.filter(user=user).delete()
-            user.delete()
-            return Response({'status':'OK!'}, status=status.HTTP_200_OK)
+            username = Token.objects.get(key=token).user.username
+            serializedData = serializers.UpdateAvatarUserSerializer(data=request.data)
+            if serializedData.is_valid():
+                password = serializedData.data.get('password')
+            else:
+                return Response({'status':'Bad Request!'}, status=status.HTTP_400_BAD_REQUEST)
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                Token.objects.filter(user=user).delete()
+                user.delete()
+                return Response({'status':'OK!'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'status':'User not found!'}, status=status.status_404_NOT_FOUND)
         except:
             return Response({'status': 'Internal Server Error!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -182,15 +241,16 @@ class UpdateTransactionAPIView(APIView):
             wallet = Wallet.objects.get(id=wallet_id)
             transaction = Transaction.objects.filter(id=id)
             if transaction.user == custom_user:
+                wallet_old_stock = wallet.stock
+                wallet_old_stock_reversed = wallet_old_stock + transaction.price if transaction.type=='E' else wallet_old_stock - transaction.price
                 transaction.update(title=title, price=price, date_time=date_time, category=category, wallet=wallet, type=type)
+                wallet_new_stock = wallet_old_stock_reversed - price if type=='E' else wallet_old_stock_reversed + price
+                wallet.stock = wallet_new_stock
+                wallet.save()
+                stock_update(custom_user)
+                return Response({'status':'OK!'}, status=status.HTTP_200_OK)
             else:
                 return Response({'status': 'You Are Not Authorized!'}, status=status.HTTP_401_UNAUTHORIZED)
-            return Response({'status':'OK!'}, status=status.HTTP_200_OK)
-            # wallet_old_stock = wallet.stock
-            # wallet_new_stock = wallet_old_stock - price if type=='E' else wallet_old_stock + price
-            # wallet.stock = wallet_new_stock
-            # wallet.save()
-            # stock_update(custom_user)
         except:
             return Response({'status': 'Internal Server Error!'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
 
